@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 setup(){
-  . ./jenkinsOp.sh
+  source ../bin/jenkinsOp.sh
 }
 
 @test "parseJson" {
