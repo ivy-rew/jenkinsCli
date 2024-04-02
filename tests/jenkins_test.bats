@@ -1,7 +1,11 @@
 #!/usr/bin/env bats
 
 setup(){
-  source ../bin/jenkinsOp.sh
+  DIR=`pwd`
+  if ! [ -f "${DIR}/../bin/.env" ]; then
+    touch "${DIR}/../bin/.env"
+  fi
+  source "${DIR}/../bin/jenkinsOp.sh"
 }
 
 @test "parseJson" {
@@ -11,11 +15,13 @@ setup(){
 }
 
 @test "loadBranches" {
+  skip "http"
   branches=$(getAvailableBranches)
   [[ " ${branches[@]} " =~ "master" ]] # contains master
 }
 
 @test "loadJobs" {
+  skip "http"
   jobs=$(getAvailableTestJobs)
   [[ " ${jobs[@]} " =~ "ivy-core_test-bpm-exec" ]]
   [[ " ${jobs[@]} " =~ "ivy-core_ci-windows" ]]
@@ -30,6 +36,7 @@ setup(){
 }
 
 @test "health emoji" {
+  skip "http"
   state=$(getHealth "ivy-core_ci" "master")
   [[ "$state" == 🆗* ]]
 }

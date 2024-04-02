@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+#    branches: [ "master" ]
+  pull_request:
+#    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt install -y bats
+    - name: Test with Bats
+      shell: 'script -q -e -c "bash {0}"' # work around tty issues
+      env:
+        TERM: linux # fix tput for tty issue work around
+      run: |
+        cd tests
+        bats -t .
