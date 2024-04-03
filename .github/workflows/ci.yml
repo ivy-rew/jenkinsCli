@@ -17,11 +17,14 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
-        sudo apt install -y bats
+        sudo apt install -y bats python3
     - name: Test with Bats
       shell: 'script -q -e -c "bash {0}"' # work around tty issues
       env:
         TERM: linux # fix tput for tty issue work around
       run: |
         cd tests
+        python3 -m http.server --bind 127.0.0.1 --directory ${GITHUB_WORKSPACE}/tests/mock &
+        sleep 1 # wait for server start
+        export BASE_URL="http://127.0.0.1:8000"
         bats -t .

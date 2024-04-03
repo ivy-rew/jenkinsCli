@@ -15,29 +15,26 @@ setup(){
 }
 
 @test "loadBranches" {
-  skip "http"
   branches=$(getAvailableBranches)
   [[ " ${branches[@]} " =~ "master" ]] # contains master
 }
 
 @test "loadJobs" {
-  skip "http"
   jobs=$(getAvailableTestJobs)
-  [[ " ${jobs[@]} " =~ "ivy-core_test-bpm-exec" ]]
-  [[ " ${jobs[@]} " =~ "ivy-core_ci-windows" ]]
-  [[ " ${jobs[@]} " != *ivy-core_techdoc* ]]
+  [[ " ${jobs[@]} " =~ "core_test-bpm-exec" ]]
+  [[ " ${jobs[@]} " =~ "core_ci-windows" ]]
+  [[ " ${jobs[@]} " != *core_techdoc* ]]
 }
 
 @test "connectability" {
-  URL="http://jenkins.ivyteam.oblivion"
+  BASE_URL="http://jenkins.ivyteam.oblivion"
   rm -f /tmp/stderr
   getAvailableBranches 2> /tmp/stderr
   grep "Could not resolve host" /tmp/stderr
 }
 
 @test "health emoji" {
-  skip "http"
-  state=$(getHealth "ivy-core_ci" "master")
+  state=$(getHealth "core_ci" "master")
   [[ "$state" == 🆗* ]]
 }
 
