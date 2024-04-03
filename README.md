@@ -5,6 +5,8 @@ Giving you speed in daily repetitive work.
 
 This is a [debianDevSystem](https://github.com/ivy-rew/debianDevSystem) sub-project of old, now living in it's own dedicated repo.
 
+[![CI Build](https://github.com/ivy-rew/jenkinsCli/actions/workflows/ci.yml/badge.svg)](https://github.com/ivy-rew/jenkinsCli/actions/workflows/ci.yml)
+
 ## Setup
 
 1. clone this repo to a location of your choice
