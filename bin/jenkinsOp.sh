@@ -3,13 +3,14 @@
 SELECT=$1
 
 JOB=core_ci
-if [ ! -z "$3" ]
-  then
-    JOB=$3
+if [ ! -z "$3" ]; then
+  JOB=$3
 fi
 
 JENKINS="jenkins.ivyteam.io"
-URL="https://${JENKINS}/job/${JOB}/"
+if [ -z "${BASE_URL}" ]; then
+  BASE_URL="https://${JENKINS}/"
+fi
 DIR="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
 ENV="$DIR/.env"
@@ -29,14 +30,14 @@ if ! [ -x "$(command -v curl)" ]; then
 fi
 
 getAvailableBranches(){
-  local JSON=$(curl -sS "${URL}/api/json?tree=jobs\[name\]")
+  local JSON=$(curl -sS "${BASE_URL}/job/${JOB}/api/json?tree=jobs\[name\]")
   local BRANCHES="$(jsonField "${JSON}" "name" \
    | sed -e 's|%2F|/|' )"
   echo ${BRANCHES}
 }
 
 getAvailableTestJobs(){
-  local JSON=$(curl -sS "https://$JENKINS/api/json?tree=jobs\[name\]")
+  local JSON=$(curl -sS "${BASE_URL}/api/json?tree=jobs\[name\]")
   local JOBS="$(jsonField "$JSON" "name" \
    | grep 'core_product\|core_test\|core_ci\|core_json-schema' \
    | sed -e 's|%2F|/|' )"
@@ -46,7 +47,7 @@ getAvailableTestJobs(){
 getHealth(){
   JOB="$1"
   BRANCH="$2"
-  API_URI="https://${JENKINS}/job/${JOB}/job/${BRANCH}/api/json?tree=color"
+  API_URI="${BASE_URL}/job/${JOB}/job/${BRANCH}/api/json?tree=color"
   JSON=$(curl -sS "${API_URI}")
   COLOR=$(jsonField "${JSON}" "color")
   colorToEmo $COLOR
@@ -95,13 +96,13 @@ triggerBuild(){
   RUN_JOB=$1
   BRANCH=$2
 
-  JOB_URL="https://$JENKINS/job/${RUN_JOB}/job/${BRANCH}"
+  JOB_URL="${BASE_URL}/job/${RUN_JOB}/job/${BRANCH}"
   RESPONSE=$( requestBuild ${JOB_URL} )
   echo -e "[ $( statusColor ${RESPONSE} ) ] @ $JOB_URL"
   
   if [ "$RESPONSE" == 404 ] || [ "$RESPONSE" == 409 ] ; then
       # job may requires a manual rescan to expose our new branch | isolate in sub bash to avoid conflicts!
-      SCANNED=$( rescanBranches "https://$JENKINS/job/$RUN_JOB/" 3>&1 1>&2 2>&3 )
+      SCANNED=$( rescanBranches "${BASE_URL}/job/$RUN_JOB/" 3>&1 1>&2 2>&3 )
       # re-try
       RESPONSE=$( requestBuild ${JOB_URL} )
       echo -e "[ $( statusColor ${RESPONSE} ) ] @ $JOB_URL"
@@ -121,7 +122,7 @@ requestBuild(){
 
   # get XSS preventention token
   if [ -z ${CRUMB+x} ]; then
-    ISSUER_URI="https://${JENKINS}/crumbIssuer/api/xml"
+    ISSUER_URI="${BASE_URL}/crumbIssuer/api/xml"
     CRUMB=$(curl -sS --basic -u "${JENKINS_USER}:${JENKINS_TOKEN}" "$ISSUER_URI") \
       | grep -o -E '"crumb":"[^"]*' | sed -e 's|"crumb":"||'
     export CRUMB="$CRUMB" #re-use for follow up requests
@@ -164,7 +165,7 @@ createView(){
   BRANCH=$1
   BRANCH_NAME=$( echo $BRANCH | sed -e 's|/|_|')
   ISSUE_REGEX=$( echo ".*${BRANCH}" | sed -e 's|.*/|\.*|' )
-  MYVIEWS_URL="https://$JENKINS/user/${JENKINS_USER}/my-views"
+  MYVIEWS_URL="${BASE_URL}/user/${JENKINS_USER}/my-views"
   curl -sS -k -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" -H "$CRUMB" \
     --form name="${BRANCH_NAME}" --form   mode=hudson.model.ListView \
     --form json="{'name': '${BRANCH_NAME}', 'mode': 'hudson.model.ListView', 'useincluderegex': 'on', 'includeRegex': '${ISSUE_REGEX}', 'recurse': 'true'}" \
