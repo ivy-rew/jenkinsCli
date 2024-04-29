@@ -5,15 +5,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )"
 source $DIR/jenkinsGet.sh
 
 BRANCH=master
-if [ ! -z "$1" ]
-  then
-    BRANCH=$1
+if [ ! -z "$1" ]; then
+  BRANCH=$1
 fi
 
 JOB=core_product
-if [ ! -z "$2" ]
-  then
-    JOB=$2
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  JOB="core_product-mac"
+fi
+if [ ! -z "$2" ]; then
+  JOB=$2
 fi
 
 JENKINS="jenkins.ivyteam.io"
