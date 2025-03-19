@@ -32,7 +32,7 @@ fi
 getAvailableBranches(){
   local JSON=$(curl -sS "${BASE_URL}/job/${JOB}/api/json?tree=jobs\[name\]")
   local BRANCHES="$(jsonField "${JSON}" "name" \
-   | sed -e 's|%2F|/|' )"
+   | sed -e 's|%2F|/|g' )"
   echo ${BRANCHES}
 }
 
@@ -40,7 +40,7 @@ getAvailableTestJobs(){
   local JSON=$(curl -sS "${BASE_URL}/api/json?tree=jobs\[name\]")
   local JOBS="$(jsonField "$JSON" "name" \
    | grep 'core_product\|core_test\|core_ci\|core_json-schema' \
-   | sed -e 's|%2F|/|' )"
+   | sed -e 's|%2F|/|g' )"
   echo ${JOBS}
 }
 
@@ -174,9 +174,9 @@ createView(){
 }
 
 encode(){
-  echo $1 | sed -e 's|/|%2F|' 
+  echo $1 | sed -e 's|/|%2F|g' 
 }
 
 encodeForDownload(){
-  echo $1 | sed -e 's|/|%252F|' 
+  echo $1 | sed -e 's|/|%252F|g' 
 }
