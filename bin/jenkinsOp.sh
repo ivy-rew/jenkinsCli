@@ -32,6 +32,7 @@ fi
 getAvailableBranches(){
   local JSON=$(curl -sS "${BASE_URL}/job/${JOB}/api/json?tree=jobs\[name\]")
   local BRANCHES="$(jsonField "${JSON}" "name" \
+   | grep -v '^PR-' \
    | sed -e 's|%2F|/|g' )"
   echo ${BRANCHES}
 }
