@@ -96,7 +96,7 @@ function chooseBranch() {
   fi
   OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} )
 
-  echo "SELECT branch of $URL"
+  echo "SELECT branch of $(origin)"
   select OPTION in ${OPTIONS[@]}; do
     if [ "$OPTION" == "!re-scan" ]; then
         echo 're-scanning [beta]'

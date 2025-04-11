@@ -9,10 +9,19 @@ This is a [debianDevSystem](https://github.com/ivy-rew/debianDevSystem) sub-proj
 
 ## Setup
 
+### Environment
+
 1. clone this repo to a location of your choice
 2. run the `install.sh` script within in a terminal
 3. define your environment: in `bin/.env`
 4. use the cli: start with `jenkinsRun.sh`
+
+### Repos
+
+The script can be customized by providing text file like the `bin/core.git`.
+You may customize this existing or add/contribute similar files.
+
+- The name `core.git` must match the last part of the remote URI `git@github.com:axonivy/core.git`
 
 ## Features
 
