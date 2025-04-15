@@ -44,10 +44,13 @@ getBranchesForJob(){
   local JSON=$(curl -sS "${BASE_URL}/job/${job}/api/json?tree=jobs\[name\]")
   local BRANCHES="$(jsonField "${JSON}" "name" \
   | sed -e 's|%2F|/|g' \
-  | grep -v '^PR-' \
-  | grep -v '^renovate/' \
   )"
-  echo ${BRANCHES}
+
+  if ! [ -z "${BRANCH_FILTER}" ]; then
+    echo "${BRANCHES}" | grep -v -e ${BRANCH_FILTER}
+  else
+    echo "${BRANCHES}"
+  fi
 }
 
 getAvailableTestJobs(){

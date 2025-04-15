@@ -1,5 +1,9 @@
 # job that supplies valid branches to trigger actions from
 BRANCH_SCAN_JOB=core_ci
+
 # filter to reduce amount of listed jobs
 JOB_FILTER='core_product\|core_test\|core_ci\|core_json-schema'
 #JOB_FILTER=core_
+
+# reduce the default listed branches
+BRANCH_FILTER='^PR-\|^renovate/'

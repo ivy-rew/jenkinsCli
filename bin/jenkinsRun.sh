@@ -111,13 +111,23 @@ function chooseBranch() {
   if [[ -z "$BRANCHES_COLORED" ]]; then
     BRANCHES_COLORED="${BRANCHES_RAW[@]}" #all without highlight: local 'only' branch.
   fi
-  OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} )
+  local POST_OPTIONS=()
+  if ! [ -z "${BRANCH_FILTER}" ]; then
+    POST_OPTIONS+=('...more')
+  fi
+  local OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
 
   echo "SELECT branch of $(origin)"
   select OPTION in ${OPTIONS[@]}; do
     if [ "$OPTION" == "!re-scan" ]; then
         echo 're-scanning [beta]'
         rescanBranches $URL
+        chooseBranch
+        break
+    fi
+    if [ "$OPTION" == "...more" ]; then
+        echo 'revealing default-filtered branches'
+        BRANCH_FILTER=""
         chooseBranch
         break
     fi
