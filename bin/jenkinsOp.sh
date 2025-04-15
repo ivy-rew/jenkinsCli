@@ -2,49 +2,80 @@
 
 SELECT=$1
 
-JOB=core_ci
-if [ ! -z "$3" ]; then
-  JOB=$3
-fi
-
 JENKINS="jenkins.ivyteam.io"
 if [ -z "${BASE_URL}" ]; then
   BASE_URL="https://${JENKINS}/"
 fi
 DIR="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
-ENV="$DIR/.env"
-if [ -f $ENV ]; then
-    . $ENV
-else
-    echo "'$ENV' file missing. Adapt it form '.env.template' in order to use all features of jenkins CLI"
-fi
-
-if [ -z ${JENKINS_USER} ]; then
-    JENKINS_USER=`whoami`
-fi
-
 # ensure dependent binaries exist
 if ! [ -x "$(command -v curl)" ]; then
   sudo apt install -y curl
 fi
 
-getAvailableBranches(){
-  local JSON=$(curl -sS "${BASE_URL}/job/${JOB}/api/json?tree=jobs\[name\]")
+loadJenkinsEnv(){
+  ENV="$DIR/.env"
+  if [ -f $ENV ]; then
+    . $ENV
+  else
+    echo "'$ENV' file missing. Adapt it form '.env.template' in order to use all features of jenkins CLI"
+  fi
+  if [ -z ${JENKINS_USER} ]; then
+    JENKINS_USER=`whoami`
+  fi
+}
+
+loadGitEnv(){
+  local gitEnv="$DIR/${origin}.git"
+  if [ -f "$gitEnv" ]; then
+    . ${gitEnv}
+  fi
+}
+
+getAvailableBranches(){  
+  if [ -z "${BRANCH_SCAN_JOB}" ]; then
+    BRANCH_SCAN_JOB=$origin # if no gitEnv was present
+  fi
+  getBranchesForJob $BRANCH_SCAN_JOB
+}
+
+getBranchesForJob(){
+  local job=$1
+  local JSON=$(curl -sS "${BASE_URL}/job/${job}/api/json?tree=jobs\[name\]")
   local BRANCHES="$(jsonField "${JSON}" "name" \
-   | sed -e 's|%2F|/|g' \
-   | grep -v '^PR-' \
-   | grep -v '^renovate/' \
+  | sed -e 's|%2F|/|g' \
   )"
-  echo ${BRANCHES}
+
+  if ! [ -z "${BRANCH_FILTER}" ]; then
+    echo "${BRANCHES}" | grep -v -e ${BRANCH_FILTER}
+  else
+    echo "${BRANCHES}"
+  fi
 }
 
 getAvailableTestJobs(){
-  local JSON=$(curl -sS "${BASE_URL}/api/json?tree=jobs\[name\]")
+  getAvailableTestJobsOrigin "$(origin)"
+}
+
+getAvailableTestJobsOrigin(){
+  # asume $gitEnv for origin already loaded
+  if [ -z "${JOB_FILTER}" ]; then
+    JOB_FILTER="^${origin}\$\|${origin}_" # if no gitEnv was present
+  fi
+  getJobsSelection "${JOB_FILTER}"
+}
+
+getJobsSelection(){
+  local SELECT=$1
+  local JSON=$(getJobsJson)
   local JOBS="$(jsonField "$JSON" "name" \
-   | grep 'core_product\|core_test\|core_ci\|core_json-schema' \
+   | grep "$SELECT" \
    | sed -e 's|%2F|/|g' )"
   echo ${JOBS}
+}
+
+getJobsJson(){
+  curl -sS "${BASE_URL}/api/json?tree=jobs\[name\]"
 }
 
 getHealth(){
@@ -183,3 +214,21 @@ encode(){
 encodeForDownload(){
   echo $1 | sed -e 's|/|%252F|g' 
 }
+
+gitOrigin(){
+  local uri=$(git remote get-url origin)
+  local resource=${uri##*/} #cut host
+  echo ${resource%.*} #cut .git
+}
+
+origin(){
+  origin=$(gitOrigin)
+  if [ -z "$origin" ]; then
+    origin="core"
+  fi
+  echo "$origin"
+}
+
+origin=$(origin)
+loadGitEnv
+loadJenkinsEnv

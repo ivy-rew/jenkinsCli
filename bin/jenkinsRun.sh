@@ -26,28 +26,42 @@ function triggerBuilds() {
         echo -e "triggering builds for ${COLOR_BRANCH}"
         SEL_JOBS=${JOBS[@]}
     fi
+    
     HEALTH="false"
+    FILTERED="true"
 
-    select RUN in none 'health' getDesigner getEngine ${SEL_JOBS[@]} 'new view'
+    local PRE_ACTIONS=('!leave:exit' '!health' '!getDesigner' '!getEngine')
+
+    local POST_ACTIONS=('!new_view')
+    if ! [ -z "${JOB_FILTER}" ]; then
+        POST_ACTIONS+=('...more')
+    fi
+
+    select RUN in ${PRE_ACTIONS[@]} ${SEL_JOBS[@]} ${POST_ACTIONS[@]} 
     do
         BRANCH_ENCODED=`encodeForDownload $BRANCH`
-        if [ "$RUN" == "none" ] ; then
+        if [ "$RUN" == "!leave:exit" ] ; then
             break
         fi
-        if [ "$RUN" == "health" ] ; then
+        if [ "$RUN" == "!health" ] ; then
             HEALTH="true"
             break;
         fi
-        if [ "$RUN" == "getDesigner" ] ; then
+        if [ "$RUN" == "!getDesigner" ] ; then
             echo $($DIR/newDesigner.sh "$BRANCH_ENCODED")
             break
         fi
-        if [ "$RUN" == "getEngine" ] ; then
+        if [ "$RUN" == "!getEngine" ] ; then
             echo $($DIR/newEngine.sh "$BRANCH_ENCODED")
             break
         fi
-        if [ "$RUN" == "new view" ] ; then
+        if [ "$RUN" == "!new_view" ] ; then
             echo "$(createView $BRANCH)"
+            break
+        fi
+        if [ "$RUN" == "...more" ] ; then
+            FILTERED="false"
+            export JOB_FILTER=""
             break
         fi
 
@@ -56,6 +70,9 @@ function triggerBuilds() {
     done
     
     if [ "$HEALTH" == "true" ] ; then
+        triggerBuilds $1
+    fi
+    if [ "$FILTERED" == "false" ] ; then
         triggerBuilds $1
     fi
 }
@@ -94,13 +111,23 @@ function chooseBranch() {
   if [[ -z "$BRANCHES_COLORED" ]]; then
     BRANCHES_COLORED="${BRANCHES_RAW[@]}" #all without highlight: local 'only' branch.
   fi
-  OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} )
+  local POST_OPTIONS=()
+  if ! [ -z "${BRANCH_FILTER}" ]; then
+    POST_OPTIONS+=('...more')
+  fi
+  local OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
 
-  echo "SELECT branch of $URL"
+  echo "SELECT branch of $(origin)"
   select OPTION in ${OPTIONS[@]}; do
     if [ "$OPTION" == "!re-scan" ]; then
         echo 're-scanning [beta]'
         rescanBranches $URL
+        chooseBranch
+        break
+    fi
+    if [ "$OPTION" == "...more" ]; then
+        echo 'revealing default-filtered branches'
+        BRANCH_FILTER=""
         chooseBranch
         break
     fi

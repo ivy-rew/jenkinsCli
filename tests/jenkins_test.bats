@@ -15,15 +15,22 @@ setup(){
 }
 
 @test "loadBranches" {
-  branches=$(getAvailableBranches)
+  branches=$(getBranchesForJob "core_ci")
   [[ " ${branches[@]} " =~ "master" ]] # contains master
 }
 
+@test "loadBranches_scanConfigAware" {
+  export BRANCH_SCAN_JOB=process-editor-client
+  branches=$(getAvailableBranches)
+  [[ " ${branches[@]} " =~ "multiple-role-select" ]]
+}
+
 @test "loadJobs" {
-  jobs=$(getAvailableTestJobs)
+  export JOB_FILTER="core_test\|core_ci"
+  jobs=$(getAvailableTestJobsOrigin "core")
   [[ " ${jobs[@]} " =~ "core_test-bpm-exec" ]]
   [[ " ${jobs[@]} " =~ "core_ci-windows" ]]
-  [[ " ${jobs[@]} " != *core_techdoc* ]]
+  [[ " ${jobs[@]} " != *core_sonar* ]]
 }
 
 @test "connectability" {
@@ -50,6 +57,10 @@ setup(){
   [ "$(statusColor '201')" == "${C_GREEN}201${C_OFF}" ]
   [ "$(statusColor '404')" == "${C_RED}404${C_OFF}" ]
   [ "$(statusColor '301')" == "${C_YELLOW}301${C_OFF}" ]
+}
+
+@test "parse origin" {
+  [ "$(gitOrigin)" == "jenkinsCli" ]
 }
 
 @test "openDir" {
