@@ -165,13 +165,9 @@ requestBuild(){
 
   local RUN_PARAMS=(-L -X POST)
   RUN_PARAMS+=(--write-out %{http_code} --silent --output /dev/null)
-  if [[ "${RUN_JOB}" == 'thirdparty-libs' ]]; then
-    # always deploy my stuff
-    RUN_PARAMS+=(--form "json={'parameter': {'name': 'deploy', 'value': 'true'}}")
-  fi
-  if [[ "${RUN_JOB}" == 'core_json-schema' ]]; then
-    # no PRs by default
-    RUN_PARAMS+=(--form "json={'parameter': {'name': 'updateSchemaPR', 'value': 'false'}}")
+  local params=${JOB_PARAMS[$RUN_JOB]}
+  if ! [ -z "${params}" ]; then
+    RUN_PARAMS+=(--form "json={'parameter': ${params} }")
   fi
   RUN_PARAMS+=(-u "$JENKINS_USER:$JENKINS_TOKEN")
 

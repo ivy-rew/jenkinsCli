@@ -1,0 +1,4 @@
+# always deploy my P2
+JOB_PARAMS=( 
+    ['thirdparty-libs']="[ {'name': 'deploy', 'value': 'true'} ]" 
+)
