@@ -143,18 +143,18 @@ triggerBuild(){
   fi
 }
 
-requestBuild(){
-  local RUN_URL=$1
-  local RUN_JOB=$2
+useToken(){
   if [ -z ${JENKINS_TOKEN+x} ]; then
-      echo "Jenkins API token not found as enviroment variable called 'JENKINS_TOKEN'. Therefore password for jenkins must be entered:"
-      echo -n "Enter JENKINS password for $JENKINS_USER:" 
-      echo -n ""
-      read -s JENKINS_TOKEN
-      echo ""
-      export JENKINS_TOKEN="$JENKINS_TOKEN" #re-use in this cli
+    echo "Jenkins API token not found as enviroment variable called 'JENKINS_TOKEN'. Therefore password for jenkins must be entered:"
+    echo -n "Enter JENKINS password for $JENKINS_USER:" 
+    echo -n ""
+    read -s JENKINS_TOKEN
+    echo ""
+    export JENKINS_TOKEN="$JENKINS_TOKEN" #re-use in this cli
   fi
+}
 
+useCrumb(){
   # get XSS preventention token
   if [ -z ${CRUMB+x} ]; then
     ISSUER_URI="${BASE_URL}/crumbIssuer/api/xml"
@@ -162,6 +162,14 @@ requestBuild(){
       | grep -o -E '"crumb":"[^"]*' | sed -e 's|"crumb":"||'
     export CRUMB="$CRUMB" #re-use for follow up requests
   fi
+}
+
+requestBuild(){
+  local RUN_URL=$1
+  local RUN_JOB=$2
+
+  useToken
+  useCrumb
 
   local RUN_PARAMS=(-L -X POST)
   RUN_PARAMS+=(--write-out %{http_code} --silent --output /dev/null)
