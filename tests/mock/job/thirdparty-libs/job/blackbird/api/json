@@ -1,0 +1,172 @@
+{
+  "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowJob",
+  "actions" : [
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      "_class" : "jenkins.scm.api.metadata.ObjectMetadataAction"
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.displayurlapi.actions.JobDisplayAction"
+    },
+    {
+      
+    },
+    {
+      
+    },
+    {
+      "_class" : "com.cloudbees.plugins.credentials.ViewCredentialsAction"
+    },
+    {
+      "_class" : "hudson.plugins.claim.JobClaimsAction"
+    }
+  ],
+  "description" : null,
+  "displayName" : "blackbird",
+  "displayNameOrNull" : null,
+  "fullDisplayName" : "thirdparty-libs » blackbird",
+  "fullName" : "thirdparty-libs/blackbird",
+  "name" : "blackbird",
+  "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/",
+  "buildable" : true,
+  "builds" : [
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number" : 6,
+      "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/6/"
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number" : 5,
+      "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/5/"
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number" : 4,
+      "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/4/"
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number" : 3,
+      "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/3/"
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number" : 2,
+      "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/2/"
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+      "number" : 1,
+      "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/1/"
+    }
+  ],
+  "color" : "blue",
+  "firstBuild" : {
+    "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number" : 1,
+    "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/1/"
+  },
+  "healthReport" : [
+    {
+      "description" : "Build stability: No recent builds failed.",
+      "iconClassName" : "icon-health-80plus",
+      "iconUrl" : "health-80plus.png",
+      "score" : 100
+    }
+  ],
+  "keepDependencies" : false,
+  "lastBuild" : {
+    "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number" : 6,
+    "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/6/"
+  },
+  "lastCompletedBuild" : {
+    "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number" : 6,
+    "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/6/"
+  },
+  "lastFailedBuild" : null,
+  "lastStableBuild" : {
+    "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number" : 6,
+    "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/6/"
+  },
+  "lastSuccessfulBuild" : {
+    "_class" : "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+    "number" : 6,
+    "url" : "https://jenkins.ivyteam.io/job/thirdparty-libs/job/blackbird/6/"
+  },
+  "lastUnstableBuild" : null,
+  "lastUnsuccessfulBuild" : null,
+  "nextBuildNumber" : 7,
+  "property" : [
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty",
+      "branch" : {
+        
+      }
+    },
+    {
+      "_class" : "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty"
+    },
+    {
+      "_class" : "hudson.model.ParametersDefinitionProperty",
+      "parameterDefinitions" : [
+        {
+          "_class" : "hudson.model.BooleanParameterDefinition",
+          "defaultParameterValue" : {
+            "_class" : "hudson.model.BooleanParameterValue",
+            "name" : "deploy",
+            "value" : false
+          },
+          "description" : "Deploy to p2.ivyteam.io",
+          "name" : "deploy",
+          "type" : "BooleanParameterDefinition"
+        }
+      ]
+    },
+    {
+      "_class" : "jenkins.model.BuildDiscarderProperty"
+    }
+  ],
+  "concurrentBuild" : true,
+  "inQueue" : false,
+  "queueItem" : null,
+  "resumeBlocked" : false
+}

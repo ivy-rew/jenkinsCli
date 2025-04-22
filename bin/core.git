@@ -7,3 +7,8 @@ JOB_FILTER='core_product\|core_test\|core_ci\|core_json-schema'
 
 # reduce the default listed branches
 BRANCH_FILTER='^PR-\|^renovate/'
+
+# static job run parameter defaults (as JSON array)
+JOB_PARAMS=( 
+    ['core_json-schema']="[ {'name': 'updateSchemaPR', 'value': 'false'} ]" 
+)

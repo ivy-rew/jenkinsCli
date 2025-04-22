@@ -127,33 +127,34 @@ statusColor(){
 }
 
 triggerBuild(){
-  RUN_JOB=$1
-  BRANCH=$2
+  local RUN_JOB=$1
+  local BRANCH=$2
 
-  JOB_URL="${BASE_URL}/job/${RUN_JOB}/job/${BRANCH}"
-  RESPONSE=$( requestBuild ${JOB_URL} )
+  local JOB_URL="${BASE_URL}/job/${RUN_JOB}/job/${BRANCH}"
+  RESPONSE=$( requestBuild ${JOB_URL} ${RUN_JOB} )
   echo -e "[ $( statusColor ${RESPONSE} ) ] @ $JOB_URL"
   
   if [ "$RESPONSE" == 404 ] || [ "$RESPONSE" == 409 ] ; then
       # job may requires a manual rescan to expose our new branch | isolate in sub bash to avoid conflicts!
       SCANNED=$( rescanBranches "${BASE_URL}/job/$RUN_JOB/" 3>&1 1>&2 2>&3 )
       # re-try
-      RESPONSE=$( requestBuild ${JOB_URL} )
+      RESPONSE=$( requestBuild ${JOB_URL} ${RUN_JOB} )
       echo -e "[ $( statusColor ${RESPONSE} ) ] @ $JOB_URL"
   fi
 }
 
-requestBuild(){
-  RUN_URL=$1
+useToken(){
   if [ -z ${JENKINS_TOKEN+x} ]; then
-      echo "Jenkins API token not found as enviroment variable called 'JENKINS_TOKEN'. Therefore password for jenkins must be entered:"
-      echo -n "Enter JENKINS password for $JENKINS_USER:" 
-      echo -n ""
-      read -s JENKINS_TOKEN
-      echo ""
-      export JENKINS_TOKEN="$JENKINS_TOKEN" #re-use in this cli
+    echo "Jenkins API token not found as enviroment variable called 'JENKINS_TOKEN'. Therefore password for jenkins must be entered:"
+    echo -n "Enter JENKINS password for $JENKINS_USER:" 
+    echo -n ""
+    read -s JENKINS_TOKEN
+    echo ""
+    export JENKINS_TOKEN="$JENKINS_TOKEN" #re-use in this cli
   fi
+}
 
+useCrumb(){
   # get XSS preventention token
   if [ -z ${CRUMB+x} ]; then
     ISSUER_URI="${BASE_URL}/crumbIssuer/api/xml"
@@ -161,12 +162,20 @@ requestBuild(){
       | grep -o -E '"crumb":"[^"]*' | sed -e 's|"crumb":"||'
     export CRUMB="$CRUMB" #re-use for follow up requests
   fi
+}
+
+requestBuild(){
+  local RUN_URL=$1
+  local RUN_JOB=$2
+
+  useToken
+  useCrumb
 
   local RUN_PARAMS=(-L -X POST)
   RUN_PARAMS+=(--write-out %{http_code} --silent --output /dev/null)
-  if [[ "${RUN_URL}" = *core_product* ]]; then
-    # always build a mac for me :)
-    RUN_PARAMS+=(--form "json={'parameter': {'name': 'mvnParams', 'value': '-Pivy.package.mac64'}}")
+  local params=${JOB_PARAMS[$RUN_JOB]}
+  if ! [ -z "${params}" ]; then
+    RUN_PARAMS+=(--form "json={'parameter': ${params} }")
   fi
   RUN_PARAMS+=(-u "$JENKINS_USER:$JENKINS_TOKEN")
 
