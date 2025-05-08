@@ -4,7 +4,7 @@ SELECT=$1
 
 JENKINS="jenkins.ivyteam.io"
 if [ -z "${BASE_URL}" ]; then
-  BASE_URL="https://${JENKINS}/"
+  BASE_URL="https://${JENKINS}"
 fi
 DIR="$( cd "$( dirname "$BASH_SOURCE" )" && pwd )"
 
