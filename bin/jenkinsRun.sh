@@ -124,25 +124,24 @@ function chooseBranch() {
 
   echo "SELECT branch of $(origin)"
   select OPTION in ${OPTIONS[@]}; do
-    if [ "$OPTION" == "!re-scan" ]; then
-        echo 're-scanning [beta]'
-        rescanBranches $URL
-        chooseBranch
-        break
-    fi
-    if [ "$OPTION" == "...more" ]; then
-        echo 'revealing default-filtered branches'
-        BRANCH_FILTER=""
-        chooseBranch
-        break
-    fi
-    if [ "$OPTION" == "!exit" ]; then
-        break
-    else
-        BRANCH=$(noColor "${OPTION}")
-        triggerBuilds ${BRANCH}
-        break
-    fi
+    case $OPTION in 
+        "!re-scan")
+            echo 're-scanning [beta]'
+            rescanBranches $URL
+            chooseBranch
+            break; ;;
+        "...more")
+            echo 'revealing default-filtered branches'
+            BRANCH_FILTER=""
+            chooseBranch
+            break; ;;
+        "!exit")
+            break; ;;
+        *)
+            BRANCH=$(noColor "${OPTION}")
+            triggerBuilds ${BRANCH}
+            break; ;;
+    esac
   done
 }
 
