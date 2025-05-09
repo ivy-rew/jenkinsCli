@@ -30,36 +30,42 @@ function triggerBuilds() {
     HEALTH="false"
     FILTERED="true"
 
-    local PRE_ACTIONS=('!leave:exit' '!health' '!getDesigner' '!getEngine')
+    local leave="${C_RED}!leave:exit${C_OFF}"
+    local health=$(yellow '!health')
+    local getDesigner=$(yellow '!getDesigner')
+    local getEngine=$(yellow '!getEngine')
+    local PRE_ACTIONS=("${leave}" "${health}" "${getDesigner}" "${getEngine}")
 
-    local POST_ACTIONS=('!new_view')
+    local newView=$(yellow '!new_view')
+    local more=$(yellow '...more')
+    local POST_ACTIONS=($newView)
     if ! [ -z "${JOB_FILTER}" ]; then
-        POST_ACTIONS+=('...more')
+        POST_ACTIONS+=($more)
     fi
 
     select RUN in ${PRE_ACTIONS[@]} ${SEL_JOBS[@]} ${POST_ACTIONS[@]} 
     do
         BRANCH_ENCODED=`encodeForDownload $BRANCH`
-        if [ "$RUN" == "!leave:exit" ] ; then
+        if [ "$RUN" == "${leave}" ] ; then
             break
         fi
-        if [ "$RUN" == "!health" ] ; then
+        if [ "$RUN" == "${health}" ] ; then
             HEALTH="true"
             break;
         fi
-        if [ "$RUN" == "!getDesigner" ] ; then
+        if [ "$RUN" == "${getDesigner}" ] ; then
             echo $($DIR/newDesigner.sh "$BRANCH_ENCODED")
             break
         fi
-        if [ "$RUN" == "!getEngine" ] ; then
+        if [ "$RUN" == "${getEngine}" ] ; then
             echo $($DIR/newEngine.sh "$BRANCH_ENCODED")
             break
         fi
-        if [ "$RUN" == "!new_view" ] ; then
+        if [ "$RUN" == "${newView}" ] ; then
             echo "$(createView $BRANCH)"
             break
         fi
-        if [ "$RUN" == "...more" ] ; then
+        if [ "$RUN" == "${more}" ] ; then
             FILTERED="false"
             export JOB_FILTER=""
             break
@@ -115,7 +121,7 @@ function branches() {
 }
 
 function yellow() {
-    echo "${C_YELLOW}$1${C_OFF}"
+  echo "${C_YELLOW}$1${C_OFF}"
 }
 
 function chooseBranch() {
