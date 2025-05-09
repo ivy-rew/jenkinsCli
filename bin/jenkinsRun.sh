@@ -114,32 +114,40 @@ function branches() {
   echo "${BRANCHES_COLORED[@]}"
 }
 
-function chooseBranch() {
-  BRANCHES_COLORED=$(branches)
-  local POST_OPTIONS=()
-  if ! [ -z "${BRANCH_FILTER}" ]; then
-    POST_OPTIONS+=('...more')
-  fi
-  local OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
+function yellow() {
+    echo "${C_YELLOW}$1${C_OFF}"
+}
 
-  echo "SELECT branch of $(origin)"
+function chooseBranch() {
+  local BRANCHES_COLORED=$(branches)
+  local POST_OPTIONS=()
+  local more=$(yellow "...more")
+  if ! [ -z "${BRANCH_FILTER}" ]; then
+    POST_OPTIONS+=("${more}")
+  fi
+  local rescan=$(yellow "!re-scan")
+  local exit=$(yellow "!exit")
+  local PRE_OPTIONS=("${rescan}" "${exit}" )
+  local OPTIONS=( ${PRE_OPTIONS[@]} ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
+
+  echo "SELECT branch of ${C_GREEN}$(origin)${C_OFF}"
   select OPTION in ${OPTIONS[@]}; do
-    case $OPTION in 
-        "!re-scan")
+    local WHAT=$(noColor "${OPTION}")
+    case "$OPTION" in 
+        "${rescan}")
             echo 're-scanning [beta]'
             rescanBranches
             chooseBranch
             break; ;;
-        "...more")
+        "${more}")
             echo 'revealing default-filtered branches'
             BRANCH_FILTER=""
             chooseBranch
             break; ;;
-        "!exit")
+        "${exit}")
             break; ;;
         *)
-            BRANCH=$(noColor "${OPTION}")
-            triggerBuilds ${BRANCH}
+            triggerBuilds ${WHAT}
             break; ;;
     esac
   done
