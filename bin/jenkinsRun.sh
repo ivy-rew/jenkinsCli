@@ -127,7 +127,7 @@ function chooseBranch() {
     case $OPTION in 
         "!re-scan")
             echo 're-scanning [beta]'
-            rescanBranches $URL
+            rescanBranches
             chooseBranch
             break; ;;
         "...more")
