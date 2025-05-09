@@ -185,6 +185,9 @@ requestBuild(){
 
 rescanBranches(){
   JOB_URL=$1
+  if [ -z "$JOB_URL" ]; then
+    JOB_URL="${BASE_URL}/job/$BRANCH_SCAN_JOB/"
+  fi
   ACTION="build?delay=0"
   SCAN_URL="$JOB_URL$ACTION"
   HTTP_STATUS=`curl --write-out %{http_code} --silent --output /dev/null -I -L -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" "$SCAN_URL"`

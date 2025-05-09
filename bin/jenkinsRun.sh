@@ -30,36 +30,42 @@ function triggerBuilds() {
     HEALTH="false"
     FILTERED="true"
 
-    local PRE_ACTIONS=('!leave:exit' '!health' '!getDesigner' '!getEngine')
+    local leave="${C_RED}!leave:exit${C_OFF}"
+    local health=$(yellow '!health')
+    local getDesigner=$(yellow '!getDesigner')
+    local getEngine=$(yellow '!getEngine')
+    local PRE_ACTIONS=("${leave}" "${health}" "${getDesigner}" "${getEngine}")
 
-    local POST_ACTIONS=('!new_view')
+    local newView=$(yellow '!new_view')
+    local more=$(yellow '...more')
+    local POST_ACTIONS=($newView)
     if ! [ -z "${JOB_FILTER}" ]; then
-        POST_ACTIONS+=('...more')
+        POST_ACTIONS+=($more)
     fi
 
     select RUN in ${PRE_ACTIONS[@]} ${SEL_JOBS[@]} ${POST_ACTIONS[@]} 
     do
         BRANCH_ENCODED=`encodeForDownload $BRANCH`
-        if [ "$RUN" == "!leave:exit" ] ; then
+        if [ "$RUN" == "${leave}" ] ; then
             break
         fi
-        if [ "$RUN" == "!health" ] ; then
+        if [ "$RUN" == "${health}" ] ; then
             HEALTH="true"
             break;
         fi
-        if [ "$RUN" == "!getDesigner" ] ; then
+        if [ "$RUN" == "${getDesigner}" ] ; then
             echo $($DIR/newDesigner.sh "$BRANCH_ENCODED")
             break
         fi
-        if [ "$RUN" == "!getEngine" ] ; then
+        if [ "$RUN" == "${getEngine}" ] ; then
             echo $($DIR/newEngine.sh "$BRANCH_ENCODED")
             break
         fi
-        if [ "$RUN" == "!new_view" ] ; then
+        if [ "$RUN" == "${newView}" ] ; then
             echo "$(createView $BRANCH)"
             break
         fi
-        if [ "$RUN" == "...more" ] ; then
+        if [ "$RUN" == "${more}" ] ; then
             FILTERED="false"
             export JOB_FILTER=""
             break
@@ -104,40 +110,52 @@ function inspire(){
 $(tput setaf 5)${AUTHOR} $(tput setaf 6)https://thatsthespir.it/${LINK}${C_OFF}"
 }
 
-function chooseBranch() {
-  BRANCHES_RAW=$( getAvailableBranches )
-  GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  BRANCHES_COLORED=$(grep -C 100 --color=always -E "${GIT_BRANCH}" <<< "${BRANCHES_RAW[@]}")
+function branches() {
+  local BRANCHES_RAW=$( getAvailableBranches )
+  local GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  local BRANCHES_COLORED=$(grep -C 100 --color=always -E "${GIT_BRANCH}|master" <<< "${BRANCHES_RAW[@]}")
   if [[ -z "$BRANCHES_COLORED" ]]; then
     BRANCHES_COLORED="${BRANCHES_RAW[@]}" #all without highlight: local 'only' branch.
   fi
-  local POST_OPTIONS=()
-  if ! [ -z "${BRANCH_FILTER}" ]; then
-    POST_OPTIONS+=('...more')
-  fi
-  local OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
+  echo "${BRANCHES_COLORED[@]}"
+}
 
-  echo "SELECT branch of $(origin)"
+function yellow() {
+  echo "${C_YELLOW}$1${C_OFF}"
+}
+
+function chooseBranch() {
+  local BRANCHES_COLORED=$(branches)
+  local POST_OPTIONS=()
+  local more=$(yellow "...more")
+  if ! [ -z "${BRANCH_FILTER}" ]; then
+    POST_OPTIONS+=("${more}")
+  fi
+  local rescan=$(yellow "!re-scan")
+  local exit=$(yellow "!exit")
+  local PRE_OPTIONS=("${rescan}" "${exit}" )
+  local OPTIONS=( ${PRE_OPTIONS[@]} ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
+
+  echo "SELECT branch of ${C_GREEN}$(origin)${C_OFF}"
   select OPTION in ${OPTIONS[@]}; do
-    if [ "$OPTION" == "!re-scan" ]; then
-        echo 're-scanning [beta]'
-        rescanBranches $URL
-        chooseBranch
-        break
-    fi
-    if [ "$OPTION" == "...more" ]; then
-        echo 'revealing default-filtered branches'
-        BRANCH_FILTER=""
-        chooseBranch
-        break
-    fi
-    if [ "$OPTION" == "!exit" ]; then
-        break
-    else
-        BRANCH=$(noColor "${OPTION}")
-        triggerBuilds ${BRANCH}
-        break
-    fi
+    local WHAT=$(noColor "${OPTION}")
+    case "$OPTION" in 
+        "${rescan}")
+            echo 're-scanning [beta]'
+            rescanBranches
+            chooseBranch
+            break; ;;
+        "${more}")
+            echo 'revealing default-filtered branches'
+            BRANCH_FILTER=""
+            chooseBranch
+            break; ;;
+        "${exit}")
+            break; ;;
+        *)
+            triggerBuilds ${WHAT}
+            break; ;;
+    esac
   done
 }
 
