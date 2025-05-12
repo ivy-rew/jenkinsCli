@@ -104,13 +104,18 @@ function inspire(){
 $(tput setaf 5)${AUTHOR} $(tput setaf 6)https://thatsthespir.it/${LINK}${C_OFF}"
 }
 
-function chooseBranch() {
-  BRANCHES_RAW=$( getAvailableBranches )
-  GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  BRANCHES_COLORED=$(grep -C 100 --color=always -E "${GIT_BRANCH}" <<< "${BRANCHES_RAW[@]}")
+function branches() {
+  local BRANCHES_RAW=$( getAvailableBranches )
+  local GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  local BRANCHES_COLORED=$(grep -C 100 --color=always -E "${GIT_BRANCH}|master" <<< "${BRANCHES_RAW[@]}")
   if [[ -z "$BRANCHES_COLORED" ]]; then
     BRANCHES_COLORED="${BRANCHES_RAW[@]}" #all without highlight: local 'only' branch.
   fi
+  echo "${BRANCHES_COLORED[@]}"
+}
+
+function chooseBranch() {
+  BRANCHES_COLORED=$(branches)
   local POST_OPTIONS=()
   if ! [ -z "${BRANCH_FILTER}" ]; then
     POST_OPTIONS+=('...more')
@@ -119,25 +124,24 @@ function chooseBranch() {
 
   echo "SELECT branch of $(origin)"
   select OPTION in ${OPTIONS[@]}; do
-    if [ "$OPTION" == "!re-scan" ]; then
-        echo 're-scanning [beta]'
-        rescanBranches $URL
-        chooseBranch
-        break
-    fi
-    if [ "$OPTION" == "...more" ]; then
-        echo 'revealing default-filtered branches'
-        BRANCH_FILTER=""
-        chooseBranch
-        break
-    fi
-    if [ "$OPTION" == "!exit" ]; then
-        break
-    else
-        BRANCH=$(noColor "${OPTION}")
-        triggerBuilds ${BRANCH}
-        break
-    fi
+    case $OPTION in 
+        "!re-scan")
+            echo 're-scanning [beta]'
+            rescanBranches
+            chooseBranch
+            break; ;;
+        "...more")
+            echo 'revealing default-filtered branches'
+            BRANCH_FILTER=""
+            chooseBranch
+            break; ;;
+        "!exit")
+            break; ;;
+        *)
+            BRANCH=$(noColor "${OPTION}")
+            triggerBuilds ${BRANCH}
+            break; ;;
+    esac
   done
 }
 
