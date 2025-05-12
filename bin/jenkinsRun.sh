@@ -123,26 +123,27 @@ function chooseBranch() {
   local OPTIONS=( '!re-scan' '!exit' ${BRANCHES_COLORED[@]} ${POST_OPTIONS[@]} )
 
   echo "SELECT branch of $(origin)"
-  select OPTION in ${OPTIONS[@]}; do
-    case $OPTION in 
-        "!re-scan")
-            echo 're-scanning [beta]'
-            rescanBranches
-            chooseBranch
-            break; ;;
-        "...more")
-            echo 'revealing default-filtered branches'
-            BRANCH_FILTER=""
-            chooseBranch
-            break; ;;
-        "!exit")
-            break; ;;
-        *)
-            BRANCH=$(noColor "${OPTION}")
-            triggerBuilds ${BRANCH}
-            break; ;;
-    esac
-  done
+  LINES=$(tput lines)
+  echo "LINES=$LINES"
+  OPTION=$(gum choose --height $(($LINES-5)) ${OPTIONS[@]})
+  case $OPTION in 
+      "!re-scan")
+          echo 're-scanning [beta]'
+          rescanBranches
+          chooseBranch
+          break; ;;
+      "...more")
+          echo 'revealing default-filtered branches'
+          BRANCH_FILTER=""
+          chooseBranch
+          break; ;;
+      "!exit")
+          break; ;;
+      *)
+          BRANCH=$(noColor "${OPTION}")
+          triggerBuilds ${BRANCH}
+          break; ;;
+  esac
 }
 
 if [[ "$1" == "health" ]]; then
