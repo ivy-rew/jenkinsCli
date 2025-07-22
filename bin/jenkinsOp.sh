@@ -208,15 +208,27 @@ rescanBranches(){
 
 createView(){
   # prepare a simple view: listing all jobs of my feature branch
-  BRANCH=$1
-  BRANCH_NAME=$( echo $BRANCH | sed -e 's|/|_|')
-  ISSUE_REGEX=$( echo ".*${BRANCH}" | sed -e 's|.*/|\.*|' )
-  MYVIEWS_URL="${BASE_URL}/user/${JENKINS_USER}/my-views"
-  curl -sS -k -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" -H "$CRUMB" \
-    --form name="${BRANCH_NAME}" --form   mode=hudson.model.ListView \
+  local BRANCH="$1"
+  local BRANCH_NAME=$(echo "$BRANCH" | sed -e 's|/|_|')
+  local ISSUE_REGEX=$(echo ".*${BRANCH}" | sed -e 's|.*/|\\.*|')
+  local MYVIEWS_URL="${BASE_URL}/user/${JENKINS_USER}/my-views"
+  local VIEW_URL="${MYVIEWS_URL}/view/${BRANCH_NAME}/"
+
+  # make sure authentication helpers ran
+  useToken
+  useCrumb
+
+  # attempt to create the view and capture Jenkins response
+  local RESPONSE=$(curl -sS -k -X POST -u "$JENKINS_USER:$JENKINS_TOKEN" -H "$CRUMB" \
+    --form name="${BRANCH_NAME}" --form mode=hudson.model.ListView \
     --form json="{'name': '${BRANCH_NAME}', 'mode': 'hudson.model.ListView', 'useincluderegex': 'on', 'includeRegex': '${ISSUE_REGEX}', 'recurse': 'true'}" \
-    "${MYVIEWS_URL}/createView"
-  echo "View created: ${MYVIEWS_URL}/view/${BRANCH_NAME}/"
+    "${MYVIEWS_URL}/createView")
+
+  if echo "$RESPONSE" | grep -qi "view already exists"; then
+    echo "View already exists: ${VIEW_URL}"
+  else
+    echo "View created: ${VIEW_URL}"
+  fi
 }
 
 encode(){
