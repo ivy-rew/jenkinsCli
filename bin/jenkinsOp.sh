@@ -224,14 +224,8 @@ createView(){
     --form json="{'name': '${BRANCH_NAME}', 'mode': 'hudson.model.ListView', 'useincluderegex': 'on', 'includeRegex': '${ISSUE_REGEX}', 'recurse': 'true'}" \
     "${MYVIEWS_URL}/createView")
 
-  # if Jenkins says the view already exists, open it instead of spitting HTML
   if echo "$RESPONSE" | grep -qi "view already exists"; then
     echo "View already exists: ${VIEW_URL}"
-    if command -v xdg-open >/dev/null 2>&1; then
-      xdg-open "${VIEW_URL}" >/dev/null 2>&1 &
-    elif command -v open >/dev/null 2>&1; then
-      open "${VIEW_URL}" >/dev/null 2>&1 &
-    fi
   else
     echo "View created: ${VIEW_URL}"
   fi
