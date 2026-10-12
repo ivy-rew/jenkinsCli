@@ -30,7 +30,7 @@ function triggerBuilds() {
     HEALTH="false"
     FILTERED="true"
 
-    local PRE_ACTIONS=('!leave:exit' '!health' '!getDesigner' '!getEngine')
+    local PRE_ACTIONS=('!leave:exit' '!health' '!getDesigner' '!getEngine' '!getExtension')
 
     local POST_ACTIONS=('!new_view')
     if ! [ -z "${JOB_FILTER}" ]; then
@@ -53,6 +53,10 @@ function triggerBuilds() {
         fi
         if [ "$RUN" == "!getEngine" ] ; then
             echo $($DIR/newEngine.sh "$BRANCH_ENCODED")
+            break
+        fi
+        if [ "$RUN" == "!getExtension" ] ; then
+            echo $($DIR/newExtension.sh "$BRANCH_ENCODED")
             break
         fi
         if [ "$RUN" == "!new_view" ] ; then
