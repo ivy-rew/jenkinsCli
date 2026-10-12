@@ -29,8 +29,28 @@ openDir(){
   fi
 }
 
+jenkinsSuccessUrl(){
+  local job="$1"
+  local branch="$2"
+  local jenkins="${3:-jenkins.ivyteam.io}"
+  printf 'https://%s/job/%s/job/%s/lastSuccessfulBuild' "$jenkins" "$job" "$branch"
+}
+
+jenkinsDownload(){
+  local url="$1"
+  local destination="$2"
+  if command -v wget >/dev/null 2>&1; then
+    wget "$url" -O "$destination"
+  elif command -v curl >/dev/null 2>&1; then
+    curl --fail --location --silent --show-error "$url" -o "$destination"
+  else
+    echo 'Error: this script requires wget or curl.' >&2
+    return 1
+  fi
+}
+
 jenkinsGet (){
-  SUCCESS_URL="https://$JENKINS/job/$JOB/job/$BRANCH/lastSuccessfulBuild"
+  SUCCESS_URL=$(jenkinsSuccessUrl "$JOB" "$BRANCH" "$JENKINS")
   JSON=$(curl -s "$SUCCESS_URL/api/json?pretty=true")
   REL_PATH=$(echo $JSON | \
       grep -o '"relativePath" : "[^"]*"' | \
@@ -40,12 +60,8 @@ jenkinsGet (){
   echo "found revision $REVISION"
 
   DL_URL=$SUCCESS_URL/artifact/$REL_PATH
-  
-  if [ -x "$(command -v wget )" ]; then
-    wget "$DL_URL" -P /tmp
-  elif [ -x "$(command -v curl )" ]; then
-    curl "$DL_URL" -o "/tmp/$ZIP"
-  fi
+
+  jenkinsDownload "$DL_URL" "/tmp/$ZIP" || return 1
   echo "Downloaded $ZIP. Enter a description for this $ARTIFACT"
   if [ "$BRANCH" == "master" ]
     then
